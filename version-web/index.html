@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#166859" />
+    <title>Hojas en orden</title>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="./">▤ Hojas en orden</a
+      ><button id="theme">Cambiar tema</button>
+    </header>
+    <main>
+      <p class="eyebrow">DE TUS HOJAS A UN DOCUMENTO</p>
+      <h1>Cada página, en su lugar.</h1>
+      <p>
+        Organiza las fotografías por su numeración manuscrita. Revisa los
+        resultados y conserva tus recuerdos en Word.
+      </p>
+      <nav aria-label="Etapas">
+        <span>1 · Importar</span><span>2 · Reconocer</span
+        ><span>3 · Revisar</span><span>4 · Confirmar</span
+        ><span>5 · Descargar</span>
+      </nav>
+      <section id="drop">
+        <h2>Empieza con tus fotografías</h2>
+        <p>Arrástralas aquí o selecciónalas. JPG, PNG y WEBP.</p>
+        <label class="primary file"
+          >Seleccionar fotografías<input
+            id="files"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple /></label
+        ><small
+          >Procesamiento local · Tus fotografías no se envían a ningún
+          servidor</small
+        >
+      </section>
+      <section class="panel">
+        <h2>Reconocer numeración</h2>
+        <p>
+          El OCR puede confundir manuscritos. Revisa siempre cada candidato
+          antes de confirmar el orden.
+        </p>
+        <div class="controls">
+          <label
+            >Buscar en<select id="zone">
+              <option value="edges">Márgenes superior e inferior</option>
+              <option value="full">Hoja completa (más falsos positivos)</option>
+              <option value="custom">Región seleccionada</option>
+            </select></label
+          ><label
+            >Contraste<input
+              id="contrast"
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.1"
+              value="1.6" /></label
+          ><label
+            >Brillo<input
+              id="brightness"
+              type="range"
+              min="-80"
+              max="80"
+              value="10" /></label
+          ><label
+            ><input id="sharpen" type="checkbox" checked /> Mejorar
+            nitidez</label
+          ><label
+            ><input id="rotations" type="checkbox" /> Probar giro 90°, 180° y
+            270° (más lento)</label
+          >
+        </div>
+        <button id="recognize" class="primary">Reconocer números</button>
+        <button id="stop" disabled>Detener</button
+        ><progress id="progress" value="0" max="1"></progress>
+        <p id="status" role="status" aria-live="polite">
+          Importa fotografías para empezar.
+        </p>
+      </section>
+      <section>
+        <div class="section-title">
+          <h2>Revisar y ordenar <span id="count">0 fotografías</span></h2>
+          <button id="sort">Ordenar por número</button>
+        </div>
+        <p>
+          Corrige el número, revisa la imagen y marca cada página como revisada.
+          Las flechas permiten ajustar el orden explícitamente.
+        </p>
+        <div id="issues" role="status"></div>
+        <div id="cards" class="grid"></div>
+        <p id="empty">Tus fotografías aparecerán aquí.</p>
+      </section>
+      <section class="panel">
+        <h2>Tu documento, listo para revisar</h2>
+        <p id="sequence">Sin páginas.</p>
+        <button id="confirm" class="primary">Confirmar orden</button>
+        <p id="confirmed">El orden aún no está confirmado.</p>
+        <button id="word" disabled>Generar Word</button>
+        <button id="zip" disabled>Descargar fotografías ordenadas</button>
+        <p id="exportStatus" role="status"></p>
+      </section>
+    </main>
+    <footer>Hojas en orden · Originales intactos · Sin APIs de pago</footer>
+    <dialog id="review">
+      <div class="dialog-head">
+        <h2>Revisar fotografía</h2>
+        <button id="close">Cerrar</button>
+      </div>
+      <p>
+        Arrastra sobre la imagen para delimitar el número. La región usa
+        coordenadas relativas a la imagen girada.
+      </p>
+      <div class="image-wrap">
+        <canvas
+          id="regionCanvas"
+          aria-label="Seleccionar región del número"
+        ></canvas>
+      </div>
+      <div class="controls">
+        <label
+          >Ampliación
+          <input
+            id="zoom"
+            type="range"
+            min="1"
+            max="3"
+            step="0.25"
+            value="1" /></label
+        ><button id="rotate">Girar 90°</button
+        ><button id="applyRegion">Aplicar región a esta imagen</button
+        ><button id="applyAll">Aplicar región a todas</button
+        ><button id="clearRegion">Quitar región</button>
+      </div>
+      <p id="regionStatus" role="status"></p>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
