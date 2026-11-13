@@ -1,9 +1,11 @@
 import "./style.css";
+import Sortable from "sortablejs";
 import { parseNumber, ordered, analyze } from "./model.js";
 import { thumbnail, canvasFor } from "./images.js";
 import { preparePhoto } from "./imports.js";
 import { createRecognizer } from "./ocr.js";
 import { makeWord, makeZip, download } from "./exports.js";
+let previousOrder = null;
 const $ = (id) => document.getElementById(id);
 let pages = [],
   busy = false,
@@ -42,6 +44,12 @@ function render() {
   $("empty").hidden = pages.length > 0;
   for (const [index, page] of pages.entries()) {
     const card = text("article", "", "card");
+    card.photo = page;
+    const position = text("div", `Posición ${index + 1} de ${pages.length}`, "position");
+    const handle = text("button", "⠿ Arrastrar", "drag-handle");
+    handle.setAttribute("aria-label", `Arrastrar ${page.file.name}`);
+    const orderBar = text("div", "", "order-bar");
+    orderBar.append(position, handle);
     const thumb = text("button", "", "thumb");
     thumb.setAttribute("aria-label", `Ampliar ${page.file.name}`);
     const img = document.createElement("img");
@@ -57,7 +65,7 @@ function render() {
         ? `OCR: ${page.candidates.map((c) => `${c.number} (${Math.round(c.confidence)} %)`).join(", ")} · revisar`
         : "Sin candidato OCR";
     body.append(text("p", info, "badge"));
-    const label = text("label", "Página ");
+    const label = text("label", "Número manuscrito ");
     const input = document.createElement("input");
     input.type = "number";
     input.min = "1";
@@ -87,12 +95,13 @@ function render() {
     if (page.region) body.append(text("small", "Región personalizada"));
     const actions = text("div", "", "actions");
     for (const [title, fn] of [
-      ["↑", () => move(index, -1)],
-      ["↓", () => move(index, 1)],
+      ["↑", () => move(pages.indexOf(page), -1)],
+      ["↓", () => move(pages.indexOf(page), 1)],
       [
         "Eliminar",
         () => {
           URL.revokeObjectURL(page.thumb);
+          previousOrder = null;
           pages = pages.filter((p) => p !== page);
           invalidate();
           render();
@@ -104,10 +113,32 @@ function render() {
       b.onclick = fn;
       actions.append(b);
     }
-    body.append(actions);
-    card.append(thumb, body);
+    const destination = text("form", "", "move-form");
+    const destinationLabel = text("label", "Mover a posición ");
+    const target = document.createElement("input");
+    target.type = "number";
+    target.min = "1";
+    target.max = String(pages.length);
+    target.step = "1";
+    target.required = true;
+    target.value = String(index + 1);
+    target.className = "destination";
+    target.setAttribute("aria-label", `Posición de destino de ${page.file.name}`);
+    destinationLabel.append(target);
+    const submit = text("button", "Mover");
+    submit.type = "submit";
+    destination.append(destinationLabel, submit);
+    destination.onsubmit = (event) => {
+      event.preventDefault();
+      if (destination.reportValidity()) moveTo(page, Number(target.value) - 1);
+    };
+    body.append(actions, destination);
+    card.append(orderBar, thumb, body);
     root.append(card);
   }
+  refreshOrder();
+}
+function refreshOrder() {
   const warnings = issues();
   $("issues").replaceChildren(...warnings.map((s) => text("p", s, "warning")));
   $("sequence").textContent = pages.length
@@ -115,19 +146,78 @@ function render() {
     : "Sin páginas.";
   lock();
 }
-function move(i, delta) {
-  const j = i + delta;
-  if (j < 0 || j >= pages.length) return;
-  [pages[i], pages[j]] = [pages[j], pages[i]];
+function applyOrder(next, message) {
+  const x = window.scrollX, y = window.scrollY;
+  const focused = document.activeElement;
+  pages = next;
   invalidate();
-  render();
+  const root = $("cards");
+  const cards = new Map([...root.children].map((card) => [card.photo, card]));
+  // Move existing nodes so thumbnails, input state and focus survive reordering.
+  pages.forEach((page, index) => {
+    const card = cards.get(page);
+    if (root.children[index] !== card) root.insertBefore(card, root.children[index] || null);
+    card.querySelector(".position").textContent = `Posición ${index + 1} de ${pages.length}`;
+    card.querySelector(".destination").value = String(index + 1);
+  });
+  refreshOrder();
+  if (focused?.isConnected) focused.focus({ preventScroll: true });
+  window.scrollTo(x, y);
+  $("orderStatus").textContent = message;
 }
+function moveTo(page, destination) {
+  if (busy || !Number.isInteger(destination) || destination < 0 || destination >= pages.length) return;
+  const source = pages.indexOf(page);
+  if (source === destination || source < 0) return;
+  previousOrder = [...pages];
+  const next = [...pages];
+  next.splice(source, 1);
+  next.splice(destination, 0, page);
+  applyOrder(next, `${page.file.name}: posición ${destination + 1} de ${pages.length}.`);
+}
+function move(i, delta) {
+  moveTo(pages[i], i + delta);
+}
+const sortable = Sortable.create($("cards"), {
+  handle: ".drag-handle",
+  draggable: ".card",
+  animation: 0,
+  forceFallback: true,
+  fallbackOnBody: true,
+  fallbackTolerance: 5,
+  ghostClass: "drop-target",
+  chosenClass: "drag-chosen",
+  fallbackClass: "drag-preview",
+  scroll: true,
+  scrollSensitivity: 65,
+  scrollSpeed: 12,
+  onStart() { $("orderStatus").textContent = "Arrastra hasta el espacio resaltado y suelta para mover."; },
+  onChange(event) { $("orderStatus").textContent = `Destino: posición ${event.newIndex + 1} de ${pages.length}.`; },
+  onEnd(event) {
+    const page = event.item.photo;
+    moveTo(page, event.newIndex);
+  },
+});
+$("undoMove").onclick = () => {
+  if (busy || !previousOrder) return;
+  const next = previousOrder;
+  previousOrder = null;
+  applyOrder(next, "Último movimiento deshecho. Confirma de nuevo el orden.");
+};
+$("viewMode").onchange = () => {
+  const y = window.scrollY;
+  $("cards").classList.toggle("list-view", $("viewMode").value === "list");
+  window.scrollTo(window.scrollX, y);
+};
 function lock() {
   for (const el of document.querySelectorAll(
     "#cards input,#cards button,#sort,#confirm,#files,#recognize,#zone,#contrast,#brightness,#rotations,#sharpen",
   ))
     el.disabled =
       busy || ((el.id === "confirm" || el.id === "recognize") && !pages.length);
+  sortable.option("disabled", busy);
+  $("undoMove").disabled = busy || !previousOrder;
+  $("viewMode").disabled = busy;
   $("word").disabled = $("zip").disabled = busy || !confirmed;
   $("stop").disabled = !busy || !recognizing;
 }
@@ -135,6 +225,7 @@ let recognizing = false;
 async function importFiles(files) {
   if (busy) return;
   busy = true;
+  previousOrder = null;
   lock();
   const failures = [];
   let imported = 0;
@@ -170,12 +261,15 @@ $("drop").ondrop = (e) => {
   importFiles(e.dataTransfer.files);
 };
 $("sort").onclick = () => {
-  pages = ordered(pages);
-  invalidate();
-  render();
+  if (busy) return;
+  const next = ordered(pages);
+  if (next.every((page, index) => page === pages[index])) return;
+  previousOrder = [...pages];
+  applyOrder(next, "Fotografías ordenadas por número.");
 };
 $("recognize").onclick = async () => {
   if (busy || !pages.length) return;
+  previousOrder = null;
   busy = recognizing = true;
   stop = false;
   invalidate();

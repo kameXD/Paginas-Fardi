@@ -72,14 +72,14 @@ try {
     await page.locator(".badge").allTextContents(),
   );
   const detected = await page
-    .locator(".card input[type=number]")
+    .locator(".card input[type=number]:not(.destination)")
     .evaluateAll((es) => es.map((e) => e.value));
   assert.ok(detected.includes("15"));
   assert.ok(detected.includes("3"));
   assert.ok(detected.includes("8"));
   for (const card of await page.locator(".card").all()) {
     const name = await card.locator(".filename").textContent();
-    const input = card.locator("input[type=number]");
+    const input = card.locator("input[type=number]:not(.destination)");
     await input.fill(name.match(/\d+/)[0]);
     await input.dispatchEvent("change");
   }
@@ -87,11 +87,11 @@ try {
   for (const cb of await page.locator(".card input[type=checkbox]").all())
     await cb.check();
   // Correct a number, reveal duplicate, then restore and reveal gaps.
-  await page.locator(".card input[type=number]").nth(1).fill("1");
-  await page.locator(".card input[type=number]").nth(1).dispatchEvent("change");
+  await page.locator(".card input[type=number]:not(.destination)").nth(1).fill("1");
+  await page.locator(".card input[type=number]:not(.destination)").nth(1).dispatchEvent("change");
   assert.match(await page.locator("#issues").textContent(), /Duplicados: 1/);
-  await page.locator(".card input[type=number]").nth(1).fill("3");
-  await page.locator(".card input[type=number]").nth(1).dispatchEvent("change");
+  await page.locator(".card input[type=number]:not(.destination)").nth(1).fill("3");
+  await page.locator(".card input[type=number]:not(.destination)").nth(1).dispatchEvent("change");
   await page.locator(".card input[type=checkbox]").nth(1).check();
   assert.match(await page.locator("#issues").textContent(), /2/);
   page.on("dialog", (d) => d.accept());
@@ -130,9 +130,9 @@ try {
     Object.keys(zip.files).filter((n) => /^word\/media\/[^/]+$/.test(n)).length,
     4,
   );
-  await page.locator(".card input[type=number]").first().fill("2");
+  await page.locator(".card input[type=number]:not(.destination)").first().fill("2");
   await page
-    .locator(".card input[type=number]")
+    .locator(".card input[type=number]:not(.destination)")
     .first()
     .dispatchEvent("change");
   assert.equal(await page.locator("#word").isDisabled(), true);
@@ -146,7 +146,7 @@ try {
     () => document.querySelectorAll(".card").length === 5,
   );
   assert.equal(
-    await page.locator(".card input[type=number]").first().inputValue(),
+    await page.locator(".card input[type=number]:not(.destination)").first().inputValue(),
     "2",
   );
   await page

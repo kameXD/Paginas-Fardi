@@ -87,8 +87,13 @@
         </div>
         <p>
           Corrige el número, revisa la imagen y marca cada página como revisada.
-          Las flechas permiten ajustar el orden explícitamente.
+          Arrastra desde «⠿ Arrastrar» o introduce una posición de destino. La posición indica el orden del documento; el número manuscrito es independiente.
         </p>
+        <div class="controls">
+          <label>Vista <select id="viewMode"><option value="grid">Cuadrícula</option><option value="list">Lista</option></select></label>
+          <button id="undoMove" disabled>Deshacer último movimiento</button>
+        </div>
+        <p id="orderStatus" role="status" aria-live="polite"></p>
         <div id="issues" role="status"></div>
         <div id="cards" class="grid"></div>
         <p id="empty">Tus fotografías aparecerán aquí.</p>

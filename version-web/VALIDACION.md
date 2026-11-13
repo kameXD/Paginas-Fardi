@@ -34,3 +34,11 @@ npm run test:browser
 El script imprime los resultados OCR observados y falla si faltan los candidatos esperados para las muestras de control, si hay errores JavaScript o si difieren los archivos inspeccionados. Las fotografías se generan dentro del navegador sin recursos externos.
 
 Para repetir el flujo con la compilación de producción, ejecuta `node tests/serve-production.mjs` después de compilar y, en otra terminal, `APP_URL=http://localhost:5180/Paginas-Fardi/ SKIP_DIAGNOSTIC=1 node tests/browser.mjs`. El diagnóstico de trazos sintéticos importa módulos fuente y se ejecuta sólo en desarrollo.
+
+## Organización manual (105 fotografías simuladas)
+
+`npm run test:browser` incluye ahora `tests/manual-order.mjs`, además de las pruebas existentes de OCR y casos límite. En esta sesión pasaron las cinco pruebas unitarias y las tres pruebas de navegador con Chromium del sistema.
+
+La nueva prueba importa 105 PNG distintos generados en Canvas y verifica destino exacto (también con Enter), rechazo de destinos fuera del intervalo, conservación de número corregido y revisión, posiciones visuales, deshacer y flechas tras reordenar. Alterna lista/cuadrícula, ejecuta un arrastre real de ratón y un arrastre mediante eventos táctiles nativos de Chromium (CDP) en viewport móvil, comprueba el indicador de destino y que soltar no cambie el desplazamiento. Comprueba que mover deshabilita exportaciones hasta reconfirmar, compara todos los bytes del ZIP con la secuencia manual y compara la secuencia de nombres de las 105 imágenes del DOCX con el mismo orden confirmado. También verifica ordenación automática, su deshacer y que eliminar descarta el historial.
+
+Las pruebas táctiles son automatizadas en Chromium; no se probaron dispositivos físicos ni Safari. No se publicó una nueva versión.
