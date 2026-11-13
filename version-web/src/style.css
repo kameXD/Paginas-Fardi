@@ -313,3 +313,25 @@ body.dark .thumb {
     padding: 8px;
   }
 }
+
+/* Keep browser anchoring from following a moved photo to a different row. */
+#cards { overflow-anchor: none; }
+.card { min-width: 0; }
+.order-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; padding: 8px; }
+.position { font-weight: 750; font-size: 13px; color: var(--accent); }
+.drag-handle { touch-action: none; cursor: grab; user-select: none; }
+.drag-chosen .drag-handle { cursor: grabbing; }
+.drop-target { outline: 4px dashed var(--accent); outline-offset: -4px; background: #dcece3; }
+.drop-target > * { opacity: .25; }
+.drag-preview { opacity: .8; pointer-events: none; }
+.move-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 12px; }
+.move-form label { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+#cards.list-view { grid-template-columns: 1fr; }
+.list-view .card { display: grid; grid-template-columns: 150px minmax(0, 1fr); }
+.list-view .order-bar { grid-column: 1 / -1; }
+.list-view .thumb { height: 180px; }
+@media (max-width: 600px) {
+  .list-view .card { grid-template-columns: 90px minmax(0, 1fr); }
+  .list-view .thumb { height: 140px; }
+  .card input[type="number"] { max-width: 100%; }
+}

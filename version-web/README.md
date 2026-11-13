@@ -8,7 +8,7 @@ Aplicación estática en español para importar fotografías, proponer números 
 2. Para mejorar el reconocimiento, abre una miniatura y dibuja un rectángulo alrededor del número. Aplica la región a esa foto o a todas. Las coordenadas son proporcionales: comprueba su posición si las hojas tienen encuadres diferentes. Puedes ampliar y girar la imagen. Girar elimina su región anterior.
 3. Pulsa **Reconocer números**. Se omiten las fotografías ya marcadas como revisadas. El motor busca en cuatro zonas de márgenes o en la región indicada; también permite buscar en toda la hoja. Si hay varios números candidatos, el campo queda vacío. Si no reconoce ninguno, no inventa numeración.
 4. Consulta el candidato, corrige el número y marca cada fotografía como revisada. El porcentaje procede del motor, no es una probabilidad de acierto. Desmarca «Revisada» para volver a ejecutar el OCR. Los números admitidos son enteros positivos de hasta seis dígitos.
-5. Pulsa **Ordenar por número**; las flechas permiten un orden excepcional. Revisa los duplicados, huecos y pendientes. Los huecos se calculan entre números existentes: una secuencia que empieza en 15 no implica páginas 1–14 ausentes.
+5. Pulsa **Ordenar por número**; puedes arrastrar desde «⠿ Arrastrar» con ratón o pantalla táctil, o introducir una posición exacta y pulsar **Mover** (también con Enter). El espacio resaltado indica el destino del arrastre; al acercarte al borde, la vista se desplaza. Las flechas siguen disponibles para ajustes pequeños. Alterna **Lista** y **Cuadrícula** según prefieras. **Posición** indica el orden actual, independientemente del **Número manuscrito**. **Deshacer último movimiento** revierte el último arrastre, movimiento exacto, flecha u ordenación automática, conservando las correcciones. Importar, eliminar o iniciar OCR descarta ese historial para evitar restaurar fotografías eliminadas o un orden previo al reconocimiento. Revisa los duplicados, huecos y pendientes. Los huecos se calculan entre números existentes: una secuencia que empieza en 15 no implica páginas 1–14 ausentes.
 6. Pulsa **Confirmar orden**. Se muestra la secuencia y se pide aceptación explícita de los conflictos. Cualquier modificación invalida la confirmación. Word y ZIP utilizan el mismo orden confirmado.
 7. Descarga el Word o el ZIP. El Word usa carta con márgenes de media pulgada, una imagen por página y proporciones conservadas. El ZIP conserva los bytes y formatos originales; usa sufijos únicos para duplicados y `sin-numero` para páginas desconocidas aceptadas explícitamente.
 
@@ -91,6 +91,7 @@ No se declara soporte sin conexión: no hay service worker que garantice conserv
 - docx 9.5.1: generación de OOXML (MIT).
 - JSZip 3.10.1: archivo ZIP (MIT o GPLv3; uso bajo MIT).
 - Vite 6.4.1: desarrollo y compilación (MIT).
+- SortableJS 1.15.6: arrastre con ratón y pantalla táctil (MIT).
 - Playwright 1.56.1: automatización de pruebas (Apache-2.0).
 
 Se conservan avisos de licencia en las dependencias y recursos copiados. Consulta `VALIDACION.md` para resultados concretos y pruebas pendientes.

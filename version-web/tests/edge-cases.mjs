@@ -99,7 +99,7 @@ try {
     { timeout: 120000 },
   );
   assert.equal(await page.locator("#recognize").isEnabled(), true);
-  assert.equal(await page.locator(".card input[type=number]").inputValue(), "");
+  assert.equal(await page.locator(".card input[type=number]:not(.destination)").inputValue(), "");
   console.log(
     "PASS: archivo dañado, JPEG/WEBP, giros, ZIP intacto y duplicados, conversión Word, detener y recuperar interfaz.",
   );
